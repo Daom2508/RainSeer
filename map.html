@@ -20,7 +20,7 @@
 </head>
 <body>
 
-<button class="back-btn" onclick="window.location.href='{{ url_for('showcase') }}'">← Volver</button>
+<button class="back-btn" onclick="window.location.href='/'">← Volver</button>
 <div id="map"></div>
 
 <div class="date-container">
@@ -65,6 +65,8 @@
                         `<b>Fecha:</b> ${fecha}<br>
                          <b>Años:</b> ${data.years.join(', ')}<br>
                          <b>Temperaturas:</b> ${data.temperaturas.join('°C, ')}°C<br>
+                         <b>Precipitaciones:</b>${data.precipitaciones.join('mm/day, ')}<br>
+                         <b>Promedio de Precipitaciones:</b>${data.promedio_precipitaciones}<br>
                          <b>Promedio:</b> ${data.promedio_temperatura} °C`
                     )
                     .openOn(map);
