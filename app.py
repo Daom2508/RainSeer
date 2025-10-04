@@ -5,14 +5,40 @@ import time
 
 app = Flask(__name__)
 
+# Página principal (inicio de sesión)
 @app.route('/')
-def home():
-    return render_template('map.html')
+def index():
+    return render_template('index.html')
 
+# Login
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    # Validación básica (solo para redirección)
+    if username and password:
+        return render_template('showcase.html')
+    else:
+        error = "Usuario o contraseña incorrectos"
+        return render_template('index.html', error=error)
+
+# Showcase
+@app.route('/showcase')
+def showcase():
+    return render_template('showcase.html')
+
+# Mapa principal
 @app.route('/map')
 def map_page():
     return render_template('map.html')
 
+# Map activity (otro tipo de mapa)
+@app.route('/mapactivity')
+def map_activity():
+    return render_template('mapactivity.html')
+
+# Obtener temperatura histórica
 @app.route('/get_last_year_temperature', methods=['POST'])
 def get_last_year_temperature():
     data = request.get_json()
@@ -64,7 +90,6 @@ def get_last_year_temperature():
 
     except Exception as e:
         return jsonify({'error': 'Error al obtener datos de temperatura', 'details': str(e)})
-
 
 if __name__ == '__main__':
     app.run(debug=True)
