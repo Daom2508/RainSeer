@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RainSeer Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body, html { margin: 0; height: 100%; font-family: "Comic Sans MS", sans-serif; }
+        #map { height: 80vh; width: 100%; }
+        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 1000; background: #0066cc; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .back-btn:hover { background: #004999; }
+        .date-container { width: 100%; text-align: center; margin-top: 10px; }
+        .date-container input, .date-container button { padding: 10px; margin: 5px; font-size: 1rem; }
+        .date-container input { width: 120px; text-align: center; }
+        .date-container button { background: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .date-container button:hover { background: #004999; }
+    </style>
+</head>
+<body>
+
+<button class="back-btn" onclick="window.location.href='/'">← Volver</button>
+<div id="map"></div>
+
+<div class="date-container">
+    <input type="text" id="fecha" placeholder="MM-DD" maxlength="5">
+    <button onclick="seleccionarFecha()">Aceptar</button>
+</div>
+
+<script>
+    var map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = L.marker([20, 0]).addTo(map);
+
+    function onMapClick(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+
+        if (!window.fechaMes || !window.fechaDia) {
+            alert("Primero selecciona una fecha (MM-DD)");
+            return;
+        }
+
+        const fecha = `${window.fechaMes}-${window.fechaDia}`;
+
+        fetch('/get_last_year_temperature', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: lat, lon: lon, fecha: fecha })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                marker.setLatLng(e.latlng);
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(
+                        `<b>Fecha:</b> ${fecha}<br>
+                         <b>Años:</b> ${data.years.join(', ')}<br>
+                         <b>Temperaturas:</b> ${data.temperaturas.join('°C, ')}°C<br>
+                         <b>Promedio:</b> ${data.promedio_temperatura} °C`
+                    )
+                    .openOn(map);
+            }
+        });
+    }
+
+    map.on('click', onMapClick);
+
+    function seleccionarFecha() {
+        const input = document.getElementById('fecha').value;
+        const regex = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+
+        if (!regex.test(input)) {
+            alert("Formato inválido. Usa MM-DD");
+            return;
+        }
+
+        let parts = input.split('-');
+        window.fechaMes = parts[0];
+        window.fechaDia = parts[1];
+
+        alert(`Fecha seleccionada: Día ${window.fechaDia}, Mes ${window.fechaMes}`);
+    }
+</script>
+
+</body>
+</html>
