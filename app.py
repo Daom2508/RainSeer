@@ -5,40 +5,14 @@ import time
 
 app = Flask(__name__)
 
-# Página principal (inicio de sesión)
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home():
+    return render_template('map.html')
 
-# Login
-@app.route('/login', methods=['POST'])
-def login():
-    username = request.form.get('username')
-    password = request.form.get('password')
-
-    # Validación básica (solo para redirección)
-    if username and password:
-        return render_template('showcase.html')
-    else:
-        error = "Usuario o contraseña incorrectos"
-        return render_template('index.html', error=error)
-
-# Showcase
-@app.route('/showcase')
-def showcase():
-    return render_template('showcase.html')
-
-# Mapa principal
 @app.route('/map')
 def map_page():
     return render_template('map.html')
 
-# Map activity (otro tipo de mapa)
-@app.route('/mapactivity')
-def map_activity():
-    return render_template('mapactivity.html')
-
-# Obtener temperatura histórica
 @app.route('/get_last_year_temperature', methods=['POST'])
 def get_last_year_temperature():
     data = request.get_json()
@@ -51,13 +25,16 @@ def get_last_year_temperature():
             'User-Agent': 'Mozilla/5.0 (compatible; RainSeer/1.0)'
         }
 
-        years = [datetime.now().year - i for i in range(1, 6)]
+        years = [datetime.now().year - 1 - i for i in range(1, 6)]
         mes, dia = fecha.split('-')
         temps = []
+        rainfalls = []
 
         for year in years:
             fecha_completa = f"{year}{mes}{dia}"
-            url = (
+
+            # --- Temperatura ---
+            url_temp = (
                 f"https://power.larc.nasa.gov/api/temporal/daily/point"
                 f"?parameters=T2M"
                 f"&community=AG"
@@ -65,31 +42,52 @@ def get_last_year_temperature():
                 f"&start={fecha_completa}&end={fecha_completa}"
                 f"&format=JSON"
             )
-
-            response = requests.get(url, headers=headers)
-            json_data = response.json()
+            response_temp = requests.get(url_temp, headers=headers)
+            json_temp = response_temp.json()
 
             try:
-                temp = json_data['properties']['parameter']['T2M'][fecha_completa]
+                temp = json_temp['properties']['parameter']['T2M'][fecha_completa]
                 temps.append(temp)
             except KeyError:
-                print(f"No data for {fecha_completa}")
+                print(f"No temperature data for {fecha_completa}")
+
+            # --- Precipitación ---
+            url_rain = (
+                f"https://power.larc.nasa.gov/api/temporal/daily/point"
+                f"?parameters=PRECTOTCORR"
+                f"&community=AG"
+                f"&longitude={lon}&latitude={lat}"
+                f"&start={fecha_completa}&end={fecha_completa}"
+                f"&format=JSON"
+            )
+            response_rain = requests.get(url_rain, headers=headers)
+            json_rain = response_rain.json()
+
+            try:
+                rainfall = json_rain['properties']['parameter']['PRECTOTCORR'][fecha_completa]
+                rainfalls.append(rainfall)
+            except KeyError:
+                print(f"No rainfall data for {fecha_completa}")
 
             time.sleep(1)
 
         if temps:
             promedio_temp = round(sum(temps) / len(temps), 2)
+            promedio_rainfalls = round(sum(rainfalls) / len(rainfalls), 2)
             return jsonify({
                 'fecha': fecha,
                 'years': years,
                 'temperaturas': temps,
-                'promedio_temperatura': promedio_temp
+                'promedio_temperatura': promedio_temp,
+                'precipitaciones': rainfalls,
+                'promedio_precipitaciones': promedio_rainfalls
             })
         else:
             return jsonify({'error': 'No se pudo obtener datos de temperatura para los años seleccionados.'})
 
     except Exception as e:
         return jsonify({'error': 'Error al obtener datos de temperatura', 'details': str(e)})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
