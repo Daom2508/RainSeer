@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="title">
+        <h1 class="titulo-principal">Hi {{ username }}!</h1>
+        <h2>Select your purpose for using this app</h2>
+
+        <ul>
+            <li><button onclick="irAlMapa('Planning')">Planning</button></li>
+            <li><button onclick="irAlMapa('Curiosity')">Curiosity</button></li>
+            <li><button onclick="irAlMapa('Security')">Security</button></li>
+            <li><button onclick="irAlMapa('Transportation ')">Transportationg</button></li>
+            <li><button onclick="irAlMapa('Miscellanous')">Miscellanous</button></li>
+        </ul>
+
+        <button onclick="window.location.href='{{ url_for('index') }}'">Log out</button>
+    </div>
+
+    <script>
+        function irAlMapa(actividad) {
+            window.location.href = "{{ url_for('map_page') }}";
+        }
+    </script>
+</body>
+</html>
