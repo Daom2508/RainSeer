@@ -6,126 +6,39 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        #sidebar {
-            position: absolute;
-            top: 60px;
-            left: 20px;
-            width: 250px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 12px;
-            z-index: 1001;
-            color: white;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-        }
-
-        #sidebar label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        #sidebar input {
-            width: 90px;
-            padding: 6px;
-            margin: 5px;
-            border-radius: 6px;
-            border: none;
-            text-align: center;
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        #sidebar button {
-            width: 100%;
-            padding: 8px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        #sidebar button:hover {
-            background: #004999;
-        }
-
-        .info-icons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 6px;
-            border-radius: 6px;
-            transition: background 0.3s;
-        }
-
-        .info-item:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .info-item img {
-            width: 38px;
-            height: 38px;
-            margin-right: 10px;
-        }
-
-        .info-text {
-            display: none;
-            margin-top: 10px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        #map {
-            height: 100vh;
-            width: 100%;
-            z-index: 0;
-        }
-
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1002;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .back-btn:hover {
-            background: #004999;
-        }
-    </style>
 </head>
-<body class="star-background">
+<body>
     <div class="stars"></div>
 
     <button class="back-btn" onclick="window.location.href='{{ url_for('user_page') }}'">← Volver</button>
 
     <div id="sidebar">
-        <label for="monthInput">Mes:</label>
-        <input type="number" id="monthInput" min="1" max="12" placeholder="MM">
+        <div class="date-container">
+            <select id="mes">
+                <option value="">Mes</option>
+                <option value="01">Enero</option>
+                <option value="02">Febrero</option>
+                <option value="03">Marzo</option>
+                <option value="04">Abril</option>
+                <option value="05">Mayo</option>
+                <option value="06">Junio</option>
+                <option value="07">Julio</option>
+                <option value="08">Agosto</option>
+                <option value="09">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
 
-        <label for="dayInput">Día:</label>
-        <input type="number" id="dayInput" min="1" max="31" placeholder="DD">
+            <select id="dia">
+                <option value="">Día</option>
+                {% for d in range(1, 32) %}
+                <option value="{{ '%02d' % d }}">{{ d }}</option>
+                {% endfor %}
+            </select>
 
-        <button onclick="seleccionarFecha()">Aceptar</button>
+            <button onclick="seleccionarFecha()">Aceptar</button>
+        </div>
 
         <div class="info-icons">
             <div class="info-item" onclick="toggleInfo('temp')">
@@ -137,7 +50,7 @@
                 <span>Humedad</span>
             </div>
             <div class="info-item" onclick="toggleInfo('rain')">
-                <img id="icon-rain" src="{{ url_for('static', filename='images/rain_neutral.png') }}" alt="Precipitación">
+                <img id="icon-rain" src="{{ url_for('static', filename='images/rain_none.png') }}" alt="Precipitación">
                 <span>Precipitación</span>
             </div>
             <div class="info-item" onclick="toggleInfo('clouds')">
@@ -169,7 +82,7 @@
             const lon = e.latlng.lng;
 
             if (!window.fechaMes || !window.fechaDia) {
-                alert("Primero selecciona mes y día.");
+                alert("Primero selecciona un mes y un día.");
                 return;
             }
 
@@ -185,22 +98,16 @@
                 if (data.error) {
                     alert(data.error);
                 } else {
-                    if (!data.promedio_nubosidad)
+                    if (!data.promedio_nubosidad) {
                         data.promedio_nubosidad = Math.floor(Math.random() * 101);
+                    }
 
                     weatherData = data;
                     marker.setLatLng(e.latlng);
-                    L.popup()
-                        .setLatLng(e.latlng)
-                        .setContent(
-                            `<b>Fecha:</b> ${fecha}<br>
-                             <b>Temperatura:</b> ${data.promedio_temperatura} °C<br>
-                             <b>Precipitación:</b> ${data.promedio_precipitaciones} mm<br>
-                             <b>Humedad:</b> ${data.promedio_humidity}%<br>
-                             <b>Nubosidad:</b> ${data.promedio_nubosidad}%`
-                        )
-                        .openOn(map);
+
+                    // 🔥 Sin popup — solo actualiza íconos y panel lateral
                     updateIcons(data);
+                    mostrarInfo();
                 }
             });
         }
@@ -208,18 +115,18 @@
         map.on('click', onMapClick);
 
         function seleccionarFecha() {
-            const month = document.getElementById('monthInput').value.padStart(2, '0');
-            const day = document.getElementById('dayInput').value.padStart(2, '0');
+            const mes = document.getElementById('mes').value;
+            const dia = document.getElementById('dia').value;
 
-            if (!month || !day) {
-                alert("Por favor ingresa mes y día.");
+            if (!mes || !dia) {
+                alert("Selecciona mes y día válidos.");
                 return;
             }
 
-            window.fechaMes = month;
-            window.fechaDia = day;
+            window.fechaMes = mes;
+            window.fechaDia = dia;
 
-            alert(`Fecha seleccionada: ${month}-${day}`);
+            alert(`Fecha seleccionada: ${mes}-${dia}`);
         }
 
         function toggleInfo(type) {
@@ -232,6 +139,13 @@
             if(type === 'humidity') document.getElementById('info-humidity').innerHTML = `Humedad promedio: ${weatherData.promedio_humidity} %`;
             if(type === 'rain') document.getElementById('info-rain').innerHTML = `Precipitación promedio: ${weatherData.promedio_precipitaciones} mm`;
             if(type === 'clouds') document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_nubosidad} %`;
+        }
+
+        function mostrarInfo() {
+            document.getElementById('info-temp').innerHTML = `Temperatura promedio: ${weatherData.promedio_temperatura} °C`;
+            document.getElementById('info-humidity').innerHTML = `Humedad promedio: ${weatherData.promedio_humidity} %`;
+            document.getElementById('info-rain').innerHTML = `Precipitación promedio: ${weatherData.promedio_precipitaciones} mm`;
+            document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_nubosidad} %`;
         }
 
         function updateIcons(data) {
@@ -259,4 +173,5 @@
     </script>
 </body>
 </html>
+
 
