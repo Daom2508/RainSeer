@@ -67,6 +67,13 @@
 
     <div id="map"></div>
 
+    <div id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>Cargando datos climáticos...</p>
+</div>
+
+
+
     <script>
         var map = L.map('map').setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -88,24 +95,29 @@
 
             const fecha = `${window.fechaMes}-${window.fechaDia}`;
 
-            fetch('/get_last_year_temperature', {
+            document.getElementById("loading-overlay").style.display = "flex";
+
+            fetch('/get_weather_summary', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lat: lat, lon: lon, fecha: fecha })
             })
             .then(response => response.json())
             .then(data => {
+
+                document.getElementById("loading-overlay").style.display = "none";
+
                 if (data.error) {
                     alert(data.error);
                 } else {
-                    if (!data.promedio_nubosidad) {
-                        data.promedio_nubosidad = Math.floor(Math.random() * 101);
+                    if (!data.promedio_cloudy) {
+                        data.promedio_cloudy = Math.floor(Math.random() * 101);
                     }
 
                     weatherData = data;
                     marker.setLatLng(e.latlng);
 
-                    // 🔥 Sin popup — solo actualiza íconos y panel lateral
+
                     updateIcons(data);
                     mostrarInfo();
                 }
@@ -138,14 +150,14 @@
             if(type === 'temp') document.getElementById('info-temp').innerHTML = `Temperatura promedio: ${weatherData.promedio_temperatura} °C`;
             if(type === 'humidity') document.getElementById('info-humidity').innerHTML = `Humedad promedio: ${weatherData.promedio_humidity} %`;
             if(type === 'rain') document.getElementById('info-rain').innerHTML = `Precipitación promedio: ${weatherData.promedio_precipitaciones} mm`;
-            if(type === 'clouds') document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_nubosidad} %`;
+            if(type === 'clouds') document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_cloudy} %`;
         }
 
         function mostrarInfo() {
             document.getElementById('info-temp').innerHTML = `Temperatura promedio: ${weatherData.promedio_temperatura} °C`;
             document.getElementById('info-humidity').innerHTML = `Humedad promedio: ${weatherData.promedio_humidity} %`;
             document.getElementById('info-rain').innerHTML = `Precipitación promedio: ${weatherData.promedio_precipitaciones} mm`;
-            document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_nubosidad} %`;
+            document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_cloudy} %`;
         }
 
         function updateIcons(data) {
@@ -166,12 +178,10 @@
             else rainIcon.src = "{{ url_for('static', filename='images/rain_snow.png') }}";
 
             const cloudIcon = document.getElementById('icon-clouds');
-            if(data.promedio_nubosidad < 30) cloudIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
-            else if(data.promedio_nubosidad < 70) cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
+            if(data.promedio_cloudy < 30) cloudIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+            else if(data.promedio_cloudy < 70) cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
             else cloudIcon.src = "{{ url_for('static', filename='images/clouds_full.png') }}";
         }
     </script>
 </body>
 </html>
-
-
