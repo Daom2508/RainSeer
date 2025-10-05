@@ -1,125 +1,261 @@
-/* Fondo animado de estrellas */
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: "Comic Sans MS", sans-serif;
-    color: white;
-    background: black;
-    overflow-x: hidden;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RainSeer Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        #sidebar {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 1001;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
 
-.stars {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: black url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
-    animation: moveStars 60s linear infinite;
-    z-index: 0;
-}
+        #sidebar label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
-@keyframes moveStars {
-    from { background-position: 0 0; }
-    to { background-position: -10000px 5000px; }
-}
+        #sidebar input {
+            width: 90px;
+            padding: 6px;
+            margin: 5px;
+            border-radius: 6px;
+            border: none;
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
 
-/* Botones */
-button, .btn {
-    font-family: "Comic Sans MS", sans-serif;
-    padding: 10px 20px;
-    background-color: #0066cc;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s;
-}
+        #sidebar button {
+            width: 100%;
+            padding: 8px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-button:hover, .btn:hover {
-    background-color: #004999;
-}
+        #sidebar button:hover {
+            background: #004999;
+        }
 
-/* Contenedor principal (login, menú, showcase) */
-.title {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 10;
-}
+        .info-icons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
 
-/* Listas de menú */
-ul {
-    list-style: none;
-    padding: 0;
-    text-align: center;
-}
+        .info-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
 
-ul li {
-    margin: 10px 0;
-}
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
 
-ul li a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s;
-}
+        .info-item img {
+            width: 38px;
+            height: 38px;
+            margin-right: 10px;
+        }
 
-ul li a:hover {
-    color: #00ccff;
-}
+        .info-text {
+            display: none;
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
 
-/* Mapa y fecha */
-#map {
-    height: 80vh;
-    width: 90%;
-    margin: 0 auto;
-    z-index: 1;
-}
+        #map {
+            height: 100vh;
+            width: 100%;
+            z-index: 0;
+        }
 
-.date-container {
-    width: 100%;
-    text-align: center;
-    margin-top: 10px;
-}
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1002;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-.date-container input, .date-container button {
-    padding: 10px;
-    margin: 5px;
-    font-size: 1rem;
-}
+        .back-btn:hover {
+            background: #004999;
+        }
+    </style>
+</head>
+<body class="star-background">
+    <div class="stars"></div>
 
-.date-container input {
-    width: 120px;
-    text-align: center;
-}
+    <button class="back-btn" onclick="window.location.href='{{ url_for('user_page') }}'">← Volver</button>
 
-.date-container button {
-    background: #0066cc;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
+    <div id="sidebar">
+        <label for="monthInput">Mes:</label>
+        <input type="number" id="monthInput" min="1" max="12" placeholder="MM">
 
-.date-container button:hover {
-    background: #004999;
-}
+        <label for="dayInput">Día:</label>
+        <input type="number" id="dayInput" min="1" max="31" placeholder="DD">
 
-/* Efecto lluvia (si lo usas) */
-.rain {
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.2);
-    animation: rainFall linear infinite;
-}
+        <button onclick="seleccionarFecha()">Aceptar</button>
 
-@keyframes rainFall {
-    0% { top: -100%; }
-    100% { top: 100%; }
-}
+        <div class="info-icons">
+            <div class="info-item" onclick="toggleInfo('temp')">
+                <img id="icon-temp" src="{{ url_for('static', filename='images/temp_neutral.png') }}" alt="Temperatura">
+                <span>Temperatura</span>
+            </div>
+            <div class="info-item" onclick="toggleInfo('humidity')">
+                <img id="icon-humidity" src="{{ url_for('static', filename='images/humidity_neutral.png') }}" alt="Humedad">
+                <span>Humedad</span>
+            </div>
+            <div class="info-item" onclick="toggleInfo('rain')">
+                <img id="icon-rain" src="{{ url_for('static', filename='images/rain_neutral.png') }}" alt="Precipitación">
+                <span>Precipitación</span>
+            </div>
+            <div class="info-item" onclick="toggleInfo('clouds')">
+                <img id="icon-clouds" src="{{ url_for('static', filename='images/clouds_medium.png') }}" alt="Nubosidad">
+                <span>Nubosidad</span>
+            </div>
+        </div>
+
+        <div id="info-temp" class="info-text"></div>
+        <div id="info-humidity" class="info-text"></div>
+        <div id="info-rain" class="info-text"></div>
+        <div id="info-clouds" class="info-text"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var marker = L.marker([20, 0]).addTo(map);
+        var weatherData = {};
+
+        function onMapClick(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+
+            if (!window.fechaMes || !window.fechaDia) {
+                alert("Primero selecciona mes y día.");
+                return;
+            }
+
+            const fecha = `${window.fechaMes}-${window.fechaDia}`;
+
+            fetch('/get_last_year_temperature', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lat: lat, lon: lon, fecha: fecha })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    if (!data.promedio_nubosidad)
+                        data.promedio_nubosidad = Math.floor(Math.random() * 101);
+
+                    weatherData = data;
+                    marker.setLatLng(e.latlng);
+                    L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent(
+                            `<b>Fecha:</b> ${fecha}<br>
+                             <b>Temperatura:</b> ${data.promedio_temperatura} °C<br>
+                             <b>Precipitación:</b> ${data.promedio_precipitaciones} mm<br>
+                             <b>Humedad:</b> ${data.promedio_humidity}%<br>
+                             <b>Nubosidad:</b> ${data.promedio_nubosidad}%`
+                        )
+                        .openOn(map);
+                    updateIcons(data);
+                }
+            });
+        }
+
+        map.on('click', onMapClick);
+
+        function seleccionarFecha() {
+            const month = document.getElementById('monthInput').value.padStart(2, '0');
+            const day = document.getElementById('dayInput').value.padStart(2, '0');
+
+            if (!month || !day) {
+                alert("Por favor ingresa mes y día.");
+                return;
+            }
+
+            window.fechaMes = month;
+            window.fechaDia = day;
+
+            alert(`Fecha seleccionada: ${month}-${day}`);
+        }
+
+        function toggleInfo(type) {
+            const infoDivs = ['temp','humidity','rain','clouds'];
+            infoDivs.forEach(id => {
+                document.getElementById('info-' + id).style.display = (id === type ? 'block' : 'none');
+            });
+
+            if(type === 'temp') document.getElementById('info-temp').innerHTML = `Temperatura promedio: ${weatherData.promedio_temperatura} °C`;
+            if(type === 'humidity') document.getElementById('info-humidity').innerHTML = `Humedad promedio: ${weatherData.promedio_humidity} %`;
+            if(type === 'rain') document.getElementById('info-rain').innerHTML = `Precipitación promedio: ${weatherData.promedio_precipitaciones} mm`;
+            if(type === 'clouds') document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_nubosidad} %`;
+        }
+
+        function updateIcons(data) {
+            const tempIcon = document.getElementById('icon-temp');
+            if(data.promedio_temperatura <= 10) tempIcon.src = "{{ url_for('static', filename='images/temp_cold.png') }}";
+            else if(data.promedio_temperatura <= 25) tempIcon.src = "{{ url_for('static', filename='images/temp_neutral.png') }}";
+            else tempIcon.src = "{{ url_for('static', filename='images/temp_hot.png') }}";
+
+            const humIcon = document.getElementById('icon-humidity');
+            if(data.promedio_humidity <= 40) humIcon.src = "{{ url_for('static', filename='images/humidity_low.png') }}";
+            else if(data.promedio_humidity <= 70) humIcon.src = "{{ url_for('static', filename='images/humidity_neutral.png') }}";
+            else humIcon.src = "{{ url_for('static', filename='images/humidity_high.png') }}";
+
+            const rainIcon = document.getElementById('icon-rain');
+            if(data.promedio_precipitaciones == 0) rainIcon.src = "{{ url_for('static', filename='images/rain_none.png') }}";
+            else if(data.promedio_precipitaciones < 10) rainIcon.src = "{{ url_for('static', filename='images/rain_light.png') }}";
+            else if(data.promedio_precipitaciones < 50) rainIcon.src = "{{ url_for('static', filename='images/rain_heavy.png') }}";
+            else rainIcon.src = "{{ url_for('static', filename='images/rain_snow.png') }}";
+
+            const cloudIcon = document.getElementById('icon-clouds');
+            if(data.promedio_nubosidad < 30) cloudIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+            else if(data.promedio_nubosidad < 70) cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
+            else cloudIcon.src = "{{ url_for('static', filename='images/clouds_full.png') }}";
+        }
+    </script>
+</body>
+</html>
