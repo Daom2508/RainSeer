@@ -13,7 +13,7 @@
 <body>
     <div class="stars"></div>
 
-    <button class="back-btn" onclick="window.location.href='{{ url_for('user_page') }}'">← Return</button>
+    <button class="back-btn" onclick="window.location.href='{{ url_for('user_page') }}'">← RETURN</button>
 
     <div id="sidebar">
         <div class="date-container">
@@ -40,7 +40,7 @@
                 {% endfor %}
             </select>
 
-            <button onclick="seleccionarFecha()">Accept</button>
+            <button onclick="seleccionarFecha()">Confirm</button>
         </div>
 
         <div class="info-icons">
@@ -85,12 +85,13 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        var marker = L.marker([20, 0]).addTo(map);
+        var marker = null;
         var weatherData = {};
 
         function onMapClick(e) {
             const lat = e.latlng.lat;
             const lon = e.latlng.lng;
+
 
             if (!window.fechaMes || !window.fechaDia) {
                 alert("Select a valid date");
@@ -121,7 +122,11 @@
                     }
 
                     weatherData = data;
-                    marker.setLatLng(e.latlng);
+                    if (marker) {
+                        marker.setLatLng(e.latlng);
+                    } else {
+                        marker = L.marker(e.latlng).addTo(map);
+                        }
 
 
                     updateIcons(data);
