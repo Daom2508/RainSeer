@@ -69,6 +69,7 @@
 
     <div id="loading-overlay">
     <div class="loading-spinner"></div>
+        <p id="loading-fun-fact" style="margin-top: 15px; font-style: italic;"></p>
     <p>Cargando datos climáticos...</p>
 </div>
 
@@ -96,6 +97,7 @@
             const fecha = `${window.fechaMes}-${window.fechaDia}`;
 
             document.getElementById("loading-overlay").style.display = "flex";
+            startFunFacts();
 
             fetch('/get_weather_summary', {
                 method: 'POST',
@@ -106,6 +108,7 @@
             .then(data => {
 
                 document.getElementById("loading-overlay").style.display = "none";
+                stopFunFacts();
 
                 if (data.error) {
                     alert(data.error);
@@ -181,6 +184,46 @@
             if(data.promedio_cloudy < 30) cloudIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
             else if(data.promedio_cloudy < 70) cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
             else cloudIcon.src = "{{ url_for('static', filename='images/clouds_full.png') }}";
+        }
+
+        const funFacts = [
+                            "¿Sabías que una sola nube puede pesar más de un millón de libras?",
+                            "Cincuenta por ciento de humedad es una esponja medio llena.",
+                            "Arabia Saudita tiene la temperatura de punto de rocío registrada más alta.",
+                            "Las gotas muy pequeñas son casi esféricas.",
+                            "¡Puedes saber la temperatura contando los chirridos de un grillo!",
+                            "¡Una ola de calor puede hacer que las vías del tren se doblen!",
+                            "Las nubes de tormenta pueden ser verdes y nadie sabe por qué.",
+                            "El desierto más grande del mundo no es caliente, es la Antártida, un desierto helado.",
+                            "¡Una ola de calor en 2003 convirtió las uvas en pasas antes de que fueran cosechadas!",
+                            "Las tormentas pueden generar vientos con velocidades superiores a 300 km/h."
+                        ];
+
+
+        let factInterval;
+
+        function startFunFacts() {
+            const factElement = document.getElementById('loading-fun-fact');
+             if (!factElement) return;
+
+
+            factElement.textContent = getRandomFact();
+
+
+            factInterval = setInterval(() => {
+             factElement.textContent = getRandomFact();
+            }, 3500);
+        }
+
+        function stopFunFacts() {
+             clearInterval(factInterval);
+             const factElement = document.getElementById('loading-fun-fact');
+             if (factElement) factElement.textContent = '';
+            }
+
+        function getRandomFact() {
+             const idx = Math.floor(Math.random() * funFacts.length);
+             return funFacts[idx];
         }
     </script>
 </body>
