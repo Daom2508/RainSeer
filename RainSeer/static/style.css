@@ -9,15 +9,14 @@ body, html {
     overflow-x: hidden;
 }
 
-h1
-{
+h1 {
     font-family: "Space Grotesk", "Times New Roman", serif;
     color: #bfc6c9;
-    text-shadow: 4px 4px 4px rgba(33, 118, 138, 0.5);;
+    text-shadow: 4px 4px 4px rgba(33, 118, 138, 0.5);
     text-align: center;
     margin: 10px 0;
-
 }
+
 h2, h3, h4, h5, h6 {
     font-family: "Space Grotesk", monospace;
     text-shadow: 2px 2px 4px rgba(25, 90, 105, 0.5);
@@ -70,6 +69,7 @@ button:hover, .btn:hover, ul li button:hover {
     background: #0a1d30;
 }
 
+
 #sidebar {
     position: absolute;
     top: 60px;
@@ -104,19 +104,21 @@ button:hover, .btn:hover, ul li button:hover {
     background: #0a1d30;
 }
 
+
 .info-icons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 15px;
+    margin-top: -5px;
 }
+
 
 .info-item {
     display: flex;
     align-items: center;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.1);
-    padding: 6px;
+    padding: 10px;
     border-radius: 6px;
     transition: background 0.3s;
 }
@@ -126,9 +128,14 @@ button:hover, .btn:hover, ul li button:hover {
 }
 
 .info-item img {
-    width: 38px;
-    height: 38px;
+    width: 60px;
+    height: 60px;
     margin-right: 10px;
+}
+
+.info-item span {
+    font-size: 1.1rem;
+    font-weight: bold;
 }
 
 .info-text {
@@ -144,7 +151,7 @@ button:hover, .btn:hover, ul li button:hover {
     width: 100%;
     height: 100%;
     background: black url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
-     background-color: rgba(15, 5, 43, 0.4);
+    background-color: rgba(15, 5, 43, 0.4);
     animation: moveStars 70s linear infinite;
     z-index: 0;
 }
@@ -156,7 +163,7 @@ button:hover, .btn:hover, ul li button:hover {
 
 .clouds {
     position: absolute;
-     opacity: 0.3;
+    opacity: 0.3;
     top: 0;
     left: 0;
     width: 100%;
@@ -274,13 +281,20 @@ ul li a:hover {
     }
 
     #sidebar {
-        width:200px;
+        width: 200px;
+    }
+
+    .info-item img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .info-item span {
+        font-size: 1rem;
+    }
 }
 
-
-}
-
- #loading-overlay {
+#loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -288,7 +302,7 @@ ul li a:hover {
     height: 100%;
     background: rgba(0,0,0,0.5);
     z-index: 9999;
-    display: none; /* Hidden by default */
+    display: none;
     justify-content: center;
     align-items: center;
     flex-direction: column;
@@ -310,11 +324,12 @@ ul li a:hover {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
 #nasa-credit {
     position: absolute;
-    bottom: 35px;
-    left: 20px;
+    bottom: 55px;
     right: auto;
+    left: 20px;
     background: rgba(0, 0, 0, 0.6);
     color: #bfc6c9;
     padding: 8px 14px;
