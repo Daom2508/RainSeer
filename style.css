@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet');
+
 body, html {
     margin: 0;
     padding: 0;
@@ -9,8 +11,10 @@ body, html {
     overflow-x: hidden;
 }
 
+<style>
+
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Arial", sans-serif;
+    font-family: "Michroma", sans-serif;
     text-align: center;
     margin: 10px 0;
 }
