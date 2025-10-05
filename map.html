@@ -46,11 +46,11 @@
                 <span>Temperatura</span>
             </div>
             <div class="info-item" onclick="toggleInfo('humidity')">
-                <img id="icon-humidity" src="{{ url_for('static', filename='images/humidity_neutral.png') }}" alt="Humedad">
+                <img id="icon-humidity" src="{{ url_for('static', filename='images/humidity_low.png') }}" alt="Humedad">
                 <span>Humedad</span>
             </div>
             <div class="info-item" onclick="toggleInfo('rain')">
-                <img id="icon-rain" src="{{ url_for('static', filename='images/rain_none.png') }}" alt="Precipitación">
+                <img id="icon-rain" src="{{ url_for('static', filename='images/clouds_clear.png') }}" alt="Precipitación">
                 <span>Precipitación</span>
             </div>
             <div class="info-item" onclick="toggleInfo('clouds')">
@@ -163,30 +163,53 @@
             document.getElementById('info-clouds').innerHTML = `Nubosidad promedio: ${weatherData.promedio_cloudy} %`;
         }
 
-        function updateIcons(data) {
-            const tempIcon = document.getElementById('icon-temp');
-            if(data.promedio_temperatura <= 10) tempIcon.src = "{{ url_for('static', filename='images/temp_cold.png') }}";
-            else if(data.promedio_temperatura <= 25) tempIcon.src = "{{ url_for('static', filename='images/temp_neutral.png') }}";
-            else tempIcon.src = "{{ url_for('static', filename='images/temp_hot.png') }}";
+       function updateIcons(data) {
+    const tempIcon = document.getElementById('icon-temp');
+    const humIcon = document.getElementById('icon-humidity');
+    const rainIcon = document.getElementById('icon-rain');
+    const cloudIcon = document.getElementById('icon-clouds');
 
-            const humIcon = document.getElementById('icon-humidity');
-            if(data.promedio_humidity <= 40) humIcon.src = "{{ url_for('static', filename='images/humidity_low.png') }}";
-            else if(data.promedio_humidity <= 70) humIcon.src = "{{ url_for('static', filename='images/humidity_neutral.png') }}";
-            else humIcon.src = "{{ url_for('static', filename='images/humidity_high.png') }}";
 
-            const rainIcon = document.getElementById('icon-rain');
-            if(data.promedio_precipitaciones == 0) rainIcon.src = "{{ url_for('static', filename='images/rain_none.png') }}";
-            else if(data.promedio_precipitaciones < 10) rainIcon.src = "{{ url_for('static', filename='images/rain_light.png') }}";
-            else if(data.promedio_precipitaciones < 50) rainIcon.src = "{{ url_for('static', filename='images/rain_heavy.png') }}";
-            else rainIcon.src = "{{ url_for('static', filename='images/rain_snow.png') }}";
+    tempIcon.src = "{{ url_for('static', filename='images/temp_neutral.png') }}";
+    humIcon.src = "{{ url_for('static', filename='images/humidity_low.png') }}";
+    rainIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+    cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
 
-            const cloudIcon = document.getElementById('icon-clouds');
-            if(data.promedio_cloudy < 30) cloudIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
-            else if(data.promedio_cloudy < 70) cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
-            else cloudIcon.src = "{{ url_for('static', filename='images/clouds_full.png') }}";
-        }
+    if (data.promedio_temperatura !== undefined) {
+        if (data.promedio_temperatura <= 10)
+            tempIcon.src = "{{ url_for('static', filename='images/temp_cold.png') }}";
+        else if (data.promedio_temperatura <= 25)
+            tempIcon.src = "{{ url_for('static', filename='images/temp_neutral.png') }}";
+        else
+            tempIcon.src = "{{ url_for('static', filename='images/temp_hot.png') }}";
+    }
 
-        const funFacts = [
+    if (data.promedio_humidity !== undefined) {
+        humIcon.src = "{{ url_for('static', filename='images/humidity_low.png') }}";
+    }
+
+    if (data.promedio_precipitaciones !== undefined) {
+        if (data.promedio_temperatura < 0)
+            rainIcon.src = "{{ url_for('static', filename='images/rain_snow.png') }}";
+        else if (data.promedio_precipitaciones == 0)
+            rainIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+        else if (data.promedio_precipitaciones < 10)
+            rainIcon.src = "{{ url_for('static', filename='images/rain_light.png') }}";
+        else if (data.promedio_precipitaciones < 50)
+            rainIcon.src = "{{ url_for('static', filename='images/rain_heavy.png') }}";
+
+    }
+
+    if (data.promedio_nubosidad !== undefined) {
+        if (data.promedio_nubosidad < 30)
+            cloudIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+        else if (data.promedio_nubosidad < 70)
+            cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
+        else
+            cloudIcon.src = "{{ url_for('static', filename='images/clouds_full.png') }}";
+    }
+}
+const funFacts = [
                             "¿Sabías que una sola nube puede pesar más de un millón de libras?",
                             "Cincuenta por ciento de humedad es una esponja medio llena.",
                             "Arabia Saudita tiene la temperatura de punto de rocío registrada más alta.",
@@ -225,6 +248,10 @@
              const idx = Math.floor(Math.random() * funFacts.length);
              return funFacts[idx];
         }
+    </script>
+</body>
+</html>
+
     </script>
 </body>
 </html>
