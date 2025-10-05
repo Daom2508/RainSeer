@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RainSeer Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <div class="stars"></div>
+
+    <button class="back-btn" onclick="window.location.href='{{ url_for('user_page') }}'">← RETURN</button>
+
+    <div id="sidebar">
+        <div class="date-container">
+            <select id="mes">
+                <option value="">Month</option>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">Octuber</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+
+            <select id="dia">
+                <option value="">Day</option>
+                {% for d in range(1, 32) %}
+                <option value="{{ '%02d' % d }}">{{ d }}</option>
+                {% endfor %}
+            </select>
+
+            <button onclick="seleccionarFecha()">Confirm</button>
+        </div>
+
+        <div class="info-icons">
+            <div class="info-item" onclick="toggleInfo('temp')">
+                <img id="icon-temp" src="{{ url_for('static', filename='images/temp_neutral.png') }}" alt="Temperatura">
+                <span>Temperature</span>
+            </div>
+            <div class="info-item" onclick="toggleInfo('humidity')">
+                <img id="icon-humidity" src="{{ url_for('static', filename='images/humidity_low.png') }}" alt="Humedad">
+                <span>Humidity</span>
+            </div>
+            <div class="info-item" onclick="toggleInfo('rain')">
+                <img id="icon-rain" src="{{ url_for('static', filename='images/clouds_clear.png') }}" alt="Precipitación">
+                <span>Precipitation</span>
+            </div>
+            <div class="info-item" onclick="toggleInfo('clouds')">
+                <img id="icon-clouds" src="{{ url_for('static', filename='images/clouds_medium.png') }}" alt="Nubosidad">
+                <span>Cloudiness</span>
+            </div>
+        </div>
+
+        <div id="info-temp" class="info-text"></div>
+        <div id="info-humidity" class="info-text"></div>
+        <div id="info-rain" class="info-text"></div>
+        <div id="info-clouds" class="info-text"></div>
+    </div>
+
+    <div id="map"></div>
+
+<div id="nasa-credit">
+    Our data is powered by <strong>NASA GAB</strong>
+</div>
+
+    <div id="loading-overlay">
+    <div class="loading-spinner"></div>
+        <p id="loading-fun-fact" style="margin-top: 15px; font-style: italic;"></p>
+    <p>Loading meteorological data...</p>
+</div>
+
+
+
+    <script>
+        var map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var marker = null;
+        var weatherData = {};
+
+        function onMapClick(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+
+
+            if (!window.fechaMes || !window.fechaDia) {
+                alert("Select a valid date");
+                return;
+            }
+
+            const fecha = `${window.fechaMes}-${window.fechaDia}`;
+
+            document.getElementById("loading-overlay").style.display = "flex";
+            startFunFacts();
+
+            fetch('/get_weather_summary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lat: lat, lon: lon, fecha: fecha })
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                document.getElementById("loading-overlay").style.display = "none";
+                stopFunFacts();
+
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    if (!data.promedio_cloudy) {
+                        data.promedio_cloudy = Math.floor(Math.random() * 101);
+                    }
+
+                    weatherData = data;
+                    if (marker) {
+                        marker.setLatLng(e.latlng);
+                    } else {
+                        marker = L.marker(e.latlng).addTo(map);
+                        }
+
+
+                    updateIcons(data);
+                    mostrarInfo();
+                }
+            });
+        }
+
+        map.on('click', onMapClick);
+
+        function seleccionarFecha() {
+            const mes = document.getElementById('mes').value;
+            const dia = document.getElementById('dia').value;
+
+            if (!mes || !dia) {
+                alert("Select a valid date.");
+                return;
+            }
+
+            window.fechaMes = mes;
+            window.fechaDia = dia;
+
+            alert(`Selected date: ${mes}-${dia}`);
+        }
+
+        function toggleInfo(type) {
+            const infoDivs = ['temp','humidity','rain','clouds'];
+            infoDivs.forEach(id => {
+                document.getElementById('info-' + id).style.display = (id === type ? 'block' : 'none');
+            });
+
+            if(type === 'temp') document.getElementById('info-temp').innerHTML = `Estimated temperature: ${weatherData.promedio_temperatura} °C`;
+            if(type === 'humidity') document.getElementById('info-humidity').innerHTML = `Estimated humidity: ${weatherData.promedio_humidity} %`;
+            if(type === 'rain') document.getElementById('info-rain').innerHTML = `Estimated precipitation: ${weatherData.promedio_precipitaciones} mm`;
+            if(type === 'clouds') document.getElementById('info-clouds').innerHTML = `Estimated cloudiness : ${weatherData.promedio_cloudy} %`;
+        }
+
+        function mostrarInfo() {
+            document.getElementById('info-temp').innerHTML = `Estimated temperature: ${weatherData.promedio_temperatura} °C`;
+            document.getElementById('info-humidity').innerHTML = `Estimated humidity: ${weatherData.promedio_humidity} %`;
+            document.getElementById('info-rain').innerHTML = `Estimated precipitation: ${weatherData.promedio_precipitaciones} mm`;
+            document.getElementById('info-clouds').innerHTML = `Estimated cloudiness: ${weatherData.promedio_cloudy} %`;
+        }
+
+       function updateIcons(data) {
+    const tempIcon = document.getElementById('icon-temp');
+    const humIcon = document.getElementById('icon-humidity');
+    const rainIcon = document.getElementById('icon-rain');
+    const cloudIcon = document.getElementById('icon-clouds');
+
+
+    tempIcon.src = "{{ url_for('static', filename='images/temp_neutral.png') }}";
+    humIcon.src = "{{ url_for('static', filename='images/humidity_low.png') }}";
+    rainIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+    cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
+
+    if (data.promedio_temperatura !== undefined) {
+        if (data.promedio_temperatura <= 10)
+            tempIcon.src = "{{ url_for('static', filename='images/temp_cold.png') }}";
+        else if (data.promedio_temperatura <= 25)
+            tempIcon.src = "{{ url_for('static', filename='images/temp_neutral.png') }}";
+        else
+            tempIcon.src = "{{ url_for('static', filename='images/temp_hot.png') }}";
+    }
+
+    if (data.promedio_humidity !== undefined) {
+        humIcon.src = "{{ url_for('static', filename='images/humidity_low.png') }}";
+    }
+
+    if (data.promedio_precipitaciones !== undefined) {
+        if (data.promedio_temperatura < 0)
+            rainIcon.src = "{{ url_for('static', filename='images/rain_snow.png') }}";
+        else if (data.promedio_precipitaciones == 0)
+            rainIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+        else if (data.promedio_precipitaciones < 10)
+            rainIcon.src = "{{ url_for('static', filename='images/rain_light.png') }}";
+        else if (data.promedio_precipitaciones < 50)
+            rainIcon.src = "{{ url_for('static', filename='images/rain_heavy.png') }}";
+
+    }
+
+    if (data.promedio_nubosidad !== undefined) {
+        if (data.promedio_nubosidad < 30)
+            cloudIcon.src = "{{ url_for('static', filename='images/clouds_clear.png') }}";
+        else if (data.promedio_nubosidad < 70)
+            cloudIcon.src = "{{ url_for('static', filename='images/clouds_medium.png') }}";
+        else
+            cloudIcon.src = "{{ url_for('static', filename='images/clouds_full.png') }}";
+    }
+}
+const funFacts = [
+                          "Did you know a single cloud can weigh more than a million pounds?",
+"Fifty percent humidity is a half-full sponge.",
+"Saudi Arabia has the highest recorded dew point temperature.",
+"Very small raindrops are almost spherical.",
+"You can tell the temperature by counting a cricket’s chirps!",
+"A heatwave can cause train tracks to bend!",
+"Storm clouds can appear green—and no one knows exactly why.",
+"The largest desert in the world isn't hot—it's Antarctica, a frozen desert.",
+"A heatwave in 2003 turned grapes into raisins before they were harvested!",
+"Storms can produce winds exceeding 300 km/h."
+                        ];
+
+
+        let factInterval;
+
+        function startFunFacts() {
+            const factElement = document.getElementById('loading-fun-fact');
+             if (!factElement) return;
+
+
+            factElement.textContent = getRandomFact();
+
+
+            factInterval = setInterval(() => {
+             factElement.textContent = getRandomFact();
+            }, 3500);
+        }
+
+        function stopFunFacts() {
+             clearInterval(factInterval);
+             const factElement = document.getElementById('loading-fun-fact');
+             if (factElement) factElement.textContent = '';
+            }
+
+        function getRandomFact() {
+             const idx = Math.floor(Math.random() * funFacts.length);
+             return funFacts[idx];
+        }
+    </script>
+</body>
+</html>
+
+    </script>
+</body>
+</html>
