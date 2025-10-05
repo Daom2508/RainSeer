@@ -60,7 +60,7 @@ def get_weather_summary():
         for year in years:
             fecha_completa = f"{year}{mes}{dia}"
 
-            # --- Temperatura ---
+            # Temperatura
             url_temp = (
                 f"https://power.larc.nasa.gov/api/temporal/daily/point"
                 f"?parameters=T2M"
@@ -78,7 +78,7 @@ def get_weather_summary():
             except KeyError:
                 print(f"No temperature data for {fecha_completa}")
 
-            # --- Precipitación ---
+            # Precipitación
             url_rain = (
                 f"https://power.larc.nasa.gov/api/temporal/daily/point"
                 f"?parameters=PRECTOTCORR"
@@ -96,7 +96,7 @@ def get_weather_summary():
             except KeyError:
                 print(f"No rainfall data for {fecha_completa}")
 
-            # ---------Cloudy ------>
+            #Cloudy
             url_cloud = (
                 f"https://power.larc.nasa.gov/api/temporal/daily/point"
                 f"?parameters=CLOUD_AMT"
@@ -113,7 +113,7 @@ def get_weather_summary():
                 clouds.append(cloud)
             except KeyError:
                 print(f"No cloud data for {fecha_completa}")
-
+            #Humidity
             url_humidity = (
                 f"https://power.larc.nasa.gov/api/temporal/daily/point"
                 f"?parameters=RH2M"
@@ -152,5 +152,5 @@ def get_weather_summary():
         return jsonify({'error': 'Error al obtener datos de temperatura', 'details': str(e)})
 
 
-if __name__ == '_main_':
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run()
