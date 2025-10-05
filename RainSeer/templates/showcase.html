@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RainSeer Showcase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="title">
+        <h1 class="titulo-principal">Bienvenido a RainSeer</h1>
+        <p>Explora actividades al aire libre y consulta el clima en tu ubicación.</p>
+        <button onclick="window.location.href='{{ url_for('map_page') }}'">Ver Mapa</button>
+        <button onclick="window.location.href='{{ url_for('index') }}'">Cerrar Sesión</button>
+    </div>
+</body>
+</html>
+ showcase
